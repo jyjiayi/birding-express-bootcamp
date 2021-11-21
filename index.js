@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(methodOverride('_method'));
 app.use(cookieParser());
 
+// render a list of all the notes
 app.get('/', (req, res) => {
   const sqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id';
   pool.query(sqlQuery, (error, result) => {
@@ -36,6 +37,7 @@ app.get('/', (req, res) => {
   });
 });
 
+// render a form that will create a new note
 app.get('/note', (req, res) => {
   const sqlQuery = 'SELECT * FROM species';
   pool.query(sqlQuery, (error, result) => {
@@ -49,6 +51,7 @@ app.get('/note', (req, res) => {
   });
 });
 
+// accept a POST request to create a new note
 app.post('/note', (req, res) => {
   const entryData = req.body;
   const speciesSqlQuery = 'SELECT * FROM species WHERE id = $1';
@@ -69,8 +72,8 @@ app.post('/note', (req, res) => {
         }
         else {
           console.log('result2', result2.rows);
-          const index = Number(result2.rows[0].id);
-          const data = { note: result2.rows[0], index };
+          const noteId = Number(result2.rows[0].id);
+          const data = { note: result2.rows[0], noteId };
           res.render('single-note', data);
         }
       });
@@ -78,18 +81,50 @@ app.post('/note', (req, res) => {
   });
 });
 
+// render a single note
 app.get('/note/:index', (req, res) => {
-  const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species_scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id=$1';
-  const { index } = req.params + 1;
-  pool.query(noteSqlQuery, index, (error, result) => {
+  const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
+  const noteId = Number(req.params.index) + 1;
+  pool.query(noteSqlQuery, [noteId], (error, result) => {
     if (error) {
       console.log('Error: single note query');
     }
     else {
-      const data = { note: result.rows, index };
+      const data = { note: result.rows[0], noteId };
       res.render('single-note', data);
     }
   });
+});
+
+// render a form to edit a note
+app.get('/note/:index/edit', (req, res) => {
+  const sqlQuery = 'SELECT * FROM species';
+  pool.query(sqlQuery, (error, allSpeciesResult) => {
+    if (error) {
+      console.log('Error: all species query');
+    }
+    else {
+      const allSpeciesData = allSpeciesResult.rows;
+      console.log(allSpeciesData);
+
+      const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
+      const noteId = Number(req.params.index) + 1;
+      pool.query(noteSqlQuery, [noteId], (error2, result) => {
+        if (error2) {
+          console.log('Error: single note query');
+        }
+        else {
+          const data = { note: result.rows[0], noteId, allSpeciesData };
+          res.render('edit', data);
+        }
+      });
+    }
+  });
+});
+
+// accept a request to edit a single note
+app.put('/note/:index', (req, res) => {
+
 });
 
 app.listen(3004);

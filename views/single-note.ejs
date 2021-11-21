@@ -2,7 +2,7 @@
 
 <div class="single-sighting-container">
   <div class="sighting-title">
-    <h2>Note #<%= Number(index) %></h2>
+    <h2>Note #<%= noteId %></h2>
   </div>
   <div class="sighting-details">
     <% Object.keys(note).forEach((element) => { %>
@@ -17,10 +17,10 @@
 <div class="row">
   <div class="col-3"></div>
   <div class="col-3 col-edit">
-    <a href="/note/<%= index %>/edit" class="edit">EDIT</a>
+    <a href="/note/<%= noteId %>/edit" class="edit">EDIT</a>
   </div>
   <div class="col-3">
-    <form action="/note/<%= index %>/delete?_method=DELETE" method="POST">
+    <form action="/note/<%= noteId %>/delete?_method=DELETE" method="POST">
       <button type="submit" class="delete">DELETE</button>
     </form>
   </div>

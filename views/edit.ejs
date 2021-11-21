@@ -1,19 +1,31 @@
-<%- include('header', {title: 'Enter a note'}); -%>
+<%- include('header', {title: 'Edit a note'}); -%>
 
 <div class="sighting-form-container">
-  <form action="/note" method="POST">
+  <form action="/note/<%= noteId%>?_method=PUT" method="POST">
     <div class="row">
       <div class="col-sm-2 input-field">
         <label for="date">Date:</label><br />
       </div>
       <div class="col-sm-4 input-field">
-        <input type="date" id="date" name="date" required /><br />
+        <input
+          type="date"
+          id="date"
+          name="date"
+          value="<%= note.date%>"
+          required
+        /><br />
       </div>
       <div class="col-sm-2 input-field">
         <label for="flock_size">Flock Size:</label><br />
       </div>
       <div class="col-sm-4 input-field">
-        <input type="text" id="flock_size" name="flock_size" required /><br />
+        <input
+          type="text"
+          id="flock_size"
+          name="flock_size"
+          value="<%= note.flock_size%>"
+          required
+        /><br />
       </div>
     </div>
     <div class="row">
@@ -22,9 +34,12 @@
       </div>
       <div class="col-sm-4 input-field">
         <select type="text" id="species" name="species" required>
-          <% species.forEach((item) => { %>
+          <% allSpeciesData.forEach((item) => { %>
+           <%  if (item.id === note.species_id) { %>
+          <option value="<%= item.id %>" selected><%= item.name %></option>
+          <%} else { %>
           <option value="<%= item.id%>"><%= item.name%></option>
-          <%})%></select
+          <% }}) %></select
         ><br />
       </div>
     </div>
