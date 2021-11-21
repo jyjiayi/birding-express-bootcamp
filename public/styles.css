@@ -1,0 +1,159 @@
+* {
+  font-family: "Yanone Kaffeesatz", sans-serif;
+}
+
+.after-nav-bar {
+  position: relative;
+  top: 41px;
+}
+
+.navbar-brand {
+  font-size: 15px;
+}
+
+.nav-link {
+  font-size: 12px;
+}
+
+.navbar-toggler {
+  font-size: 10px;
+}
+
+.navbar {
+  padding: 5px 10px;
+}
+
+/* all sighting page*/
+.all-sighting-container {
+  padding: 15px 20px;
+}
+
+.all-sighting-row img {
+  width: 100%;
+  height: auto;
+}
+
+.intro-container {
+  padding: 0px 20px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+}
+
+.list-container {
+  text-align: center;
+  background-color: rgba(128, 128, 128, 0.5);
+  padding: 20px 20px 0px 20px;
+}
+
+.list-container h3 {
+  color: white;
+  text-align: none;
+}
+
+.sort-button {
+  border-color: grey solid;
+  border-radius: 8px;
+}
+
+.table th,
+.table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.table a {
+  color: black;
+}
+
+.delete-button {
+  background: transparent;
+  color: white;
+  border: white solid;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.edit-button {
+  background: transparent;
+  color: white;
+  border: white solid;
+  border-radius: 5px;
+  padding: 4px;
+}
+
+.table form {
+  padding-top: 10px;
+}
+
+/*note and edit ejs*/
+.sighting-form-container {
+  padding: 10px 10px;
+}
+
+.sighting-form-container input {
+  border-radius: 5px;
+  border: grey solid 1px;
+  overflow-wrap: break-word;
+}
+
+.sighting-form-container textarea {
+  border-radius: 5px;
+  border: grey solid 1px;
+  overflow-wrap: break-word;
+}
+
+.input-field {
+  display: flex;
+  margin-top: 20px;
+  height: 20px;
+}
+
+.text-input {
+  height: 100px;
+  width: 100%;
+}
+
+.comments-input {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.comments-input input {
+  height: 50px;
+  width: 100%;
+}
+
+.comments-input textarea {
+  height: 50px;
+  width: 100%;
+}
+
+/*Single-note ejs*/
+
+.sighting-title {
+  background-color: lightgray;
+  padding: 30px 20px 20px 20px;
+}
+
+.sighting-details {
+  padding: 20px;
+}
+
+.col-edit {
+  margin-top: 3px;
+}
+.edit {
+  border: black solid 2px;
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: black;
+}
+
+.delete {
+  background-color: white;
+  border-radius: 5px;
+  border-color: black;
+  margin: 0px;
+}

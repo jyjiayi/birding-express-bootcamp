@@ -1,0 +1,29 @@
+<%- include('header', {title: 'Single Note'}); -%>
+
+<div class="single-sighting-container">
+  <div class="sighting-title">
+    <h2>Note #<%= Number(index) %></h2>
+  </div>
+  <div class="sighting-details">
+    <% Object.keys(note).forEach((element) => { %>
+    <div class="row">
+      <div class="col-3 col-sm-2"><%= element.toUpperCase()%>:</div>
+      <div class="col-9 col-sm-10"><%= note[element] %></div>
+    </div>
+    <% })%>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-3"></div>
+  <div class="col-3 col-edit">
+    <a href="/note/<%= index %>/edit" class="edit">EDIT</a>
+  </div>
+  <div class="col-3">
+    <form action="/note/<%= index %>/delete?_method=DELETE" method="POST">
+      <button type="submit" class="delete">DELETE</button>
+    </form>
+  </div>
+  <div class="col-3"></div>
+</div>
+<%- include('footer'); -%>

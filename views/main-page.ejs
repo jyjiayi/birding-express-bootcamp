@@ -1,0 +1,59 @@
+<%- include('header', {title: 'Bird Watching'}); -%>
+
+<div class="all-sighting-container">
+  <div>
+    <div class="row intro-container">
+      <div class="col-sm-4">
+        <h2>Bird Watching</h2>
+      </div>
+      <div class="col-sm-8">
+        <h4>
+          Welcome to the Bird Watching page!! Here lies every record of birds that you have spotted...
+        </h4>
+      </div>
+    </div>
+
+    <div class="list-container">
+      <div class="row">
+        <div class="col-sm-6"><h3>List of Entries</h3></div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Flock Size</th>
+            <th scope="col">Species</th>
+            <th scope="col">Edit</th>
+            <th scope="col">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% notes.forEach(index => { %>
+          <tr>
+            <th scope="row">              
+              <a href="/note/<%= notes.indexOf(index)%>"><%= index.date %></th></a>
+            <td><%= index.flock_size %></td>
+            <td><%= index.species_name%></td>
+            <td>
+              <a href="/note/<%= notes.indexOf(index)%>/edit"><i class="fas fa-pencil-alt edit-button"></i></a>
+            </td>
+            <td>
+              <form
+                action="/note/<%= notes.indexOf(index) %>/delete?_method=DELETE"
+                method="POST"
+              >
+                <button type="submit" class="delete-button">
+                  <i class="fas fa-trash" value="Delete"></i>
+                </button>
+              </form>
+            </td>
+            <% }) %>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('footer'); -%>

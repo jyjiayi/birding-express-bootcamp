@@ -1,0 +1,159 @@
+<%- include('header', {title: 'Enter a form'}); -%>
+
+<div class="sighting-form-container">
+  <form action="/note" method="POST">
+    <div class="row">
+      <div class="col-sm-2 input-field">
+        <label for="date">Date:</label><br />
+      </div>
+      <div class="col-sm-4 input-field">
+        <input type="date" id="date" name="date" required /><br />
+      </div>
+      <div class="col-sm-2 input-field">
+        <label for="flock_size">Flock Size:</label><br />
+      </div>
+      <div class="col-sm-4 input-field">
+        <input type="text" id="flock_size" name="flock_size" required /><br />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-2 input-field">
+        <label for="species">Species:</label><br />
+      </div>
+      <div class="col-sm-4 input-field">
+        <select type="text" id="species" name="species" required>
+          <% species.forEach((item) => { %>
+          <option value="<%= item.id%>"><%= item.name%></option>
+          <%})%></select
+        ><br />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-2 input-field">
+        <p>Behaviour:</p>
+        <br />
+      </div>
+      <div class="col-sm-10 input-field">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="bathing"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Bathing </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="feeding"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Feeding </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="walking"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Walking </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="resting"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Resting </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="flocking"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Flocking </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="climbing tree"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour">
+            Climbing tree
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-2 input-field"></div>
+      <div class="col-sm-10 input-field">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="drinking"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Drinking </label>
+        </div>
+
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="singing"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Singing </label>
+        </div>
+
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="preening"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Preening </label>
+        </div>
+
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="behaviour"
+            value="hovering"
+            id="behaviour"
+          />
+          <label class="form-check-label" for="behaviour"> Hovering </label>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="comments-input">
+      <label for="comments">Comments:</label><br />
+      <textarea type="text" id="comments" name="comments"></textarea><br />
+    </div> -->
+    <div>
+      <input type="submit" value="Submit" />
+    </div>
+  </form>
+</div>
+<%- include('footer'); -%>
