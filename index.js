@@ -1,7 +1,9 @@
-import express from 'express';
+/* eslint-disable max-len */
+import express, { request, response } from 'express';
 import pg from 'pg';
 import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
+import jsSHA from 'jssha';
 
 const { Pool } = pg;
 
@@ -63,13 +65,18 @@ app.post('/note', (req, res) => {
     }
     else {
       const currentSpecies = result.rows.name;
-      const noteSqlQuery = 'INSERT INTO notes (flock_size, date, species_id, behaviour) VALUES ($1, $2, $3, $4) RETURNING *';
-      const noteData = [Number(entryData.flock_size), entryData.date, entryData.species, entryData.behaviour];
+      const noteSqlQuery = 'INSERT INTO notes (flock_size, date, user_id,species_id, behaviour) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+      const noteData = [Number(entryData.flock_size), entryData.date, Number(req.cookies.userId), entryData.species, entryData.behaviour];
+      console.log(noteData);
 
       pool.query(noteSqlQuery, noteData, (error2, result2) => {
-        if (error) {
+        if (error2) {
           console.log('Error: note query');
+          res.status(403).send('Please log in');
         }
+        // else if (!result2.rows) {
+        //   response.status(403).send('please log in');
+        // }
         else {
           console.log('result2', result2.rows);
           const noteId = Number(result2.rows[0].id);
@@ -137,6 +144,102 @@ app.put('/note/:index', (req, res) => {
       res.render('single-note', data);
     }
   });
+});
+
+// Render a form that will sign up a user
+app.get('/signup', (request, response) => {
+  const { loggedIn } = request.cookies;
+  response.render('signup', { loggedIn });
+});
+
+// Accept a POST request to create a user
+app.post('/signup', (request, response) => {
+  // initialise the SHA object
+  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+
+  // input the password from the request to the SHA object
+  shaObj.update(request.body.password);
+
+  // get the hashed password as output from the SHA object
+  const hashedPassword = shaObj.getHash('HEX');
+
+  const inputEmail = request.body.email;
+
+  console.log('actual pw', request.body.password);
+  console.log('hashed pw', hashedPassword);
+
+  const inputPassword = hashedPassword;
+  // store the hashed password in our DB
+  const values = [inputEmail, inputPassword];
+  pool.query(
+    'INSERT INTO users (email, password) VALUES ($1, $2)',
+    values,
+    (error, result) => {
+      if (error) {
+        console.log('Sign Up error', error);
+      } else {
+        console.log(result.rows);
+        response.redirect('/login');
+      }
+    },
+  );
+});
+
+// Render a form that will log a user in
+app.get('/login', (request, response) => {
+  const { loggedIn } = request.cookies;
+  response.render('login', { loggedIn });
+});
+
+// Accept a POST request to log a user in
+app.post('/login', (request, response) => {
+  // retrieve the user entry using their email
+  const values = [request.body.email];
+
+  pool.query('SELECT * from users WHERE email=$1', values, (error, result) => {
+    // return if there is a query error
+    if (error) {
+      console.log('Log In Error', error.stack);
+      response.status(503).send('Log In unsuccessful');
+      return;
+    }
+
+    // we didnt find a user with that email
+    if (result.rows.length === 0) {
+      // the error for incorrect email and incorrect password are the same for security reasons.
+      // This is to prevent detection of whether a user has an account for a given service.
+      response.status(403).send('login failed! there is no user with the email');
+      return;
+    }
+
+    // get user record from results
+    const user = result.rows[0];
+    // initialise SHA object
+    const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+    // input the password from the request to the SHA object
+    shaObj.update(request.body.password);
+    // get the hashed value as output from the SHA object
+    const hashedPassword = shaObj.getHash('HEX');
+
+    // If the user's hashed password in the database does not match the hashed input password, login fails
+    if (user.password !== hashedPassword) {
+      // the error for incorrect email and incorrect password are the same for security reasons.
+      // This is to prevent detection of whether a user has an account for a given service.
+      response.status(403).send('login failed! incorrect password');
+      return;
+    }
+
+    // The user's password hash matches that in the DB and we authenticate the user.
+    response.cookie('loggedIn', true);
+    response.cookie('userId', user.id);
+    response.redirect('/');
+  });
+});
+
+app.delete('/logout', (request, response) => {
+  response.clearCookie('loggedIn');
+  response.clearCookie('userId');
+  response.redirect('/login');
 });
 
 app.listen(3004);

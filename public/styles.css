@@ -157,3 +157,13 @@
   border-color: black;
   margin: 0px;
 }
+
+/* Signup ejs*/
+.signup-container {
+  margin: 20px 0px 0px 30px;
+}
+
+/* Login ejs*/
+.login-container {
+  margin: 20px 0px 0px 30px;
+}

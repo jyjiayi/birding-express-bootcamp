@@ -1,0 +1,33 @@
+<%- include('header', {title: 'Sign Up Page'}); -%>
+
+<div class="signup-container">
+  <form action="/signup" method="POST">
+    <div class="row">
+      <div class="col-10"><h2>Sign Up</h2></div>
+    </div>
+    <div class="row">
+      <div class="col-8">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" name="email" class="form-control"></label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-5">
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" name="password" class="form-control"></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-10">
+        <div><button type="submit">Submit</button></div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<%- include('footer'); -%>

@@ -51,7 +51,9 @@
             <a class="nav-link" href="/behaviour">View all behaviours</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
+            <form action="/logout?_method=DELETE" method="POST">
+            <button type="submit" class="btn btn-outline-dark btn btn-md">Logout</button>
+            </form>
           </li>
         </ul>
       <div>
