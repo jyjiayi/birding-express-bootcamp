@@ -124,7 +124,19 @@ app.get('/note/:index/edit', (req, res) => {
 
 // accept a request to edit a single note
 app.put('/note/:index', (req, res) => {
+  const noteId = Number(req.params.index);
+  const noteData = req.body;
 
+  const sqlQuery = `UPDATE notes SET date='${noteData.date}', flock_size='${Number(noteData.flock_size)}', species_id='${Number(noteData.species)}', behaviour='${noteData.behaviour}' WHERE id= ${noteId} RETURNING *`;
+  // const values = [noteData.date, Number(noteData.flock_size), Number(noteData.species), noteData.behaviour, noteId];
+  pool.query(sqlQuery, (error, result) => {
+    if (error) {
+      console.log('Error: update query');
+    } else {
+      const data = { note: result.rows[0], noteId };
+      res.render('single-note', data);
+    }
+  });
 });
 
 app.listen(3004);
