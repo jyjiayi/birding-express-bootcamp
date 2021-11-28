@@ -1,11 +1,13 @@
 /* eslint-disable max-len */
-import express, { request, response } from 'express';
+import express from 'express';
 import pg from 'pg';
 import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
 import jsSHA from 'jssha';
 
 const { Pool } = pg;
+
+const SALT = 'for user auth session hashing';
 
 // determine how we connect to the local Postgres server
 const pgConnectionConfigs = {
@@ -72,11 +74,9 @@ app.post('/note', (req, res) => {
       pool.query(noteSqlQuery, noteData, (error2, result2) => {
         if (error2) {
           console.log('Error: note query');
+          // will be error if the userId is empty, means user is not logged in
           res.status(403).send('Please log in');
         }
-        // else if (!result2.rows) {
-        //   response.status(403).send('please log in');
-        // }
         else {
           console.log('result2', result2.rows);
           const noteId = Number(result2.rows[0].id);
@@ -90,43 +90,83 @@ app.post('/note', (req, res) => {
 
 // render a single note
 app.get('/note/:index', (req, res) => {
-  const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
-  const noteId = Number(req.params.index) + 1;
-  pool.query(noteSqlQuery, [noteId], (error, result) => {
-    if (error) {
-      console.log('Error: single note query');
-    }
-    else {
-      const data = { note: result.rows[0], noteId };
-      res.render('single-note', data);
-    }
-  });
+  // extract loggedInHash and userId from request cookies
+  const { loggedInHash, userId } = req.cookies;
+  // create new SHA object
+  const shaObj3 = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+  // reconstruct the hashed cookie string
+  const unhashedCookieString = `${userId}-${SALT}`;
+  shaObj3.update(unhashedCookieString);
+  const hashedCookieString = shaObj3.getHash('HEX');
+
+  // verify if the generated hashed cookie string matches the request cookie value.
+  // if hashed value doesn't match, return 403.
+  if (hashedCookieString !== loggedInHash) {
+    res.status(403).send('please login!');
+  }
+  else {
+    const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
+    const noteId = Number(req.params.index) + 1;
+    pool.query(noteSqlQuery, [noteId], (error, result) => {
+      if (error) {
+        console.log('Error: single note query');
+      }
+      else {
+        const data = { note: result.rows[0], noteId };
+        res.render('single-note', data);
+      }
+    });
+  }
 });
 
 // render a form to edit a note
 app.get('/note/:index/edit', (req, res) => {
-  const sqlQuery = 'SELECT * FROM species';
-  pool.query(sqlQuery, (error, allSpeciesResult) => {
-    if (error) {
-      console.log('Error: all species query');
-    }
-    else {
-      const allSpeciesData = allSpeciesResult.rows;
-      console.log(allSpeciesData);
+  // to check that user is logged in
+  if (req.cookies.userId) {
+  // to make sure it is the correct user to edit the note
+    const noteId = Number(req.params.index);
+    const getNoteInfoQuery = `SELECT * FROM notes WHERE id = ${noteId}`;
+    console.log('noteId :>> ', noteId);
+    pool.query(getNoteInfoQuery, (error1, result1) => {
+      if (error1) {
+        console.log('get note info query error');
+      } else {
+        const noteInfo = result1.rows[0];
+        console.log('noteInfo', result1.rows);
+        // if the user who created the note is same as the logged in user
+        if (Number(noteInfo.user_id) === Number(req.cookies.userId)) {
+          const sqlQuery = 'SELECT * FROM species';
+          pool.query(sqlQuery, (error, allSpeciesResult) => {
+            if (error) {
+              console.log('Error: all species query');
+            }
+            else {
+              const allSpeciesData = allSpeciesResult.rows;
+              console.log(allSpeciesData);
 
-      const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
-      const noteId = Number(req.params.index) + 1;
-      pool.query(noteSqlQuery, [noteId], (error2, result) => {
-        if (error2) {
-          console.log('Error: single note query');
+              const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
+              pool.query(noteSqlQuery, [noteId], (error2, result) => {
+                if (error2) {
+                  console.log('Error: single note query');
+                }
+                else {
+                  const data = { note: result.rows[0], noteId, allSpeciesData };
+                  console.log(data);
+                  res.render('edit', data);
+                }
+              });
+            }
+          });
         }
         else {
-          const data = { note: result.rows[0], noteId, allSpeciesData };
-          res.render('edit', data);
+          res.send('You are not authorised to edit this post.');
         }
-      });
-    }
-  });
+      }
+    });
+  }
+  else {
+    res.status(403).send('please login!');
+  }
 });
 
 // accept a request to edit a single note
@@ -230,6 +270,19 @@ app.post('/login', (request, response) => {
     }
 
     // The user's password hash matches that in the DB and we authenticate the user.
+
+    // create new SHA object
+    const shaObj2 = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+    // create an unhashed cookie string based on user ID and salt
+    const unhashedCookieString = `${user.id}-${SALT}`;
+
+    // generate a hashed cookie string using SHA object
+    shaObj2.update(unhashedCookieString);
+    const hashedCookieString = shaObj2.getHash('HEX');
+
+    // set the loggedInHash and userId cookies in the response
+    response.cookie('loggedInHash', hashedCookieString);
+
     response.cookie('loggedIn', true);
     response.cookie('userId', user.id);
     response.redirect('/');
