@@ -29,7 +29,7 @@ app.use(cookieParser());
 
 // render a list of all the notes
 app.get('/', (req, res) => {
-  const sqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id';
+  const sqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id';
   pool.query(sqlQuery, (error, result) => {
     if (error) {
       console.log('error');
@@ -191,7 +191,7 @@ app.get('/note/:index/edit', (req, res) => {
               const allSpeciesData = allSpeciesResult.rows;
               console.log(allSpeciesData);
 
-              const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
+              const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
               pool.query(noteSqlQuery, [noteId], (error2, result) => {
                 if (error2) {
                   console.log('Error: single note query');
@@ -241,14 +241,67 @@ app.put('/note/:index', (req, res) => {
   const noteId = Number(req.params.index);
   const noteData = req.body;
 
-  const sqlQuery = `UPDATE notes SET date='${noteData.date}', flock_size='${Number(noteData.flock_size)}', species_id='${Number(noteData.species)}', behaviour='${noteData.behaviour}' WHERE id= ${noteId} RETURNING *`;
+  const sqlQuery = `UPDATE notes SET date='${noteData.date}', flock_size='${Number(noteData.flock_size)}', species_id='${Number(noteData.species)}' WHERE id= ${noteId} RETURNING *`;
   // const values = [noteData.date, Number(noteData.flock_size), Number(noteData.species), noteData.behaviour, noteId];
   pool.query(sqlQuery, (error, result) => {
     if (error) {
       console.log('Error: update query');
     } else {
-      const data = { note: result.rows[0], noteId };
-      res.render('single-note', data);
+      const oldNoteBehaviourQuery = `SELECT * FROM notes_behaviour WHERE notes_id = ${noteId}`;
+      pool.query(oldNoteBehaviourQuery, (oldNoteBehaviourQueryError, oldNoteBehaviourQueryResult) => {
+        if (oldNoteBehaviourQueryError) {
+          console.log('old note behaviour query error');
+        } else {
+          console.log('oldNoteBehaviourQueryResult.rows :>> ', oldNoteBehaviourQueryResult.rows);
+          let queryDoneCounter = 0;
+          oldNoteBehaviourQueryResult.rows.forEach((item) => {
+          // delete existing records in note_behaviour
+            const noteBehaviourDelete = `DELETE from notes_behaviour WHERE id = ${item.id}`;
+            pool.query(noteBehaviourDelete, (noteBehaviourDeleteError, noteBehaviourDeleteResult) => {
+              if (noteBehaviourDeleteError) {
+                console.log('delete note behaviour error');
+              } else {
+                queryDoneCounter += 1;
+                if (queryDoneCounter === oldNoteBehaviourQueryResult.rows.length) {
+                  console.log('delete behaviour query done!');
+                }
+              }
+            });
+          });
+          const noteBehaviourQuery = 'INSERT INTO notes_behaviour (notes_id, behaviour_id) VALUES ($1, $2) RETURNING *';
+          let queryDoneCounter2 = 0;
+          const allBehaviourId = req.body.behaviour;
+          const allBehaviour = [];
+          allBehaviourId.forEach((actionId) => {
+            const behaviourIdQuery = `SELECT * FROM behaviour WHERE id = '${actionId}'`;
+            pool.query(behaviourIdQuery, (behaviourIdQueryError, behaviourIdQueryResult) => {
+              if (behaviourIdQueryError) {
+                console.log('behaviour id query error');
+              }
+              else {
+                console.log('behaviourIdQueryResult.rows :>> ', behaviourIdQueryResult.rows);
+                allBehaviour.push(behaviourIdQueryResult.rows[0].action);
+                const values = [noteId, actionId];
+                pool.query(noteBehaviourQuery, values, (behaviourError, behaviourResult) => {
+                  if (behaviourError) {
+                    console.log('insert behaviour query error');
+                  }
+                  else {
+                    queryDoneCounter2 += 1;
+                    if (queryDoneCounter2 === req.body.behaviour.length) {
+                      console.log('insert behaviour query done!');
+                      console.log('result2', result.rows);
+                      const data = { note: result.rows[0], noteId, allBehaviour };
+                      console.log(allBehaviour);
+                      res.render('single-note', data);
+                    }
+                  }
+                });
+              }
+            });
+          });
+        }
+      });
     }
   });
 });

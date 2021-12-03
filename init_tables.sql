@@ -20,8 +20,7 @@ CREATE TABLE IF NOT EXISTS notes (
   flock_size INTEGER,
   user_id INTEGER REFERENCES users(id),
   species_id INTEGER REFERENCES species(id),
-  date TEXT,
-  behaviour TEXT
+  date TEXT
 );
 
 CREATE TABLE IF NOT EXISTS notes_behaviour (
