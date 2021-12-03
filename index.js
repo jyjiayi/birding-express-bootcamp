@@ -9,13 +9,32 @@ const { Pool } = pg;
 
 const SALT = 'for user auth session hashing';
 
-// determine how we connect to the local Postgres server
-const pgConnectionConfigs = {
-  user: 'jyjyjiayi',
-  host: 'localhost',
-  database: 'birdingdb',
-  port: 5432,
-};
+const PORT = process.argv[2];
+
+// create separate DB connection configs for production vs non-production environments.
+// ensure our server still works on our local machines.
+let pgConnectionConfigs;
+if (process.env.ENV === 'PRODUCTION') {
+  // determine how we connect to the remote Postgres server
+  pgConnectionConfigs = {
+    user: 'postgres',
+    // set DB_PASSWORD as an environment variable for security.
+    password: process.env.DB_PASSWORD,
+    host: 'localhost',
+    database: 'birdingdb',
+    port: 5432,
+  };
+} else {
+  // determine how we connect to the local Postgres server
+  pgConnectionConfigs = {
+    user: 'jyjyjiayi',
+    host: 'localhost',
+    database: 'birdingdb',
+    port: 5432,
+  };
+}
+
+
 
 const pool = new Pool(pgConnectionConfigs);
 
@@ -415,4 +434,4 @@ app.delete('/logout', (request, response) => {
   response.redirect('/login');
 });
 
-app.listen(3004);
+app.listen(PORT));
