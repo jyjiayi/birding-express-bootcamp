@@ -46,11 +46,19 @@ app.get('/note', (req, res) => {
   const sqlQuery = 'SELECT * FROM species';
   pool.query(sqlQuery, (error, result) => {
     if (error) {
-      console.log('error');
+      console.log('species query error');
     }
     else {
-      const data = { species: result.rows };
-      res.render('note', data);
+      const behaviourQuery = 'SELECT * FROM behaviour';
+      pool.query(behaviourQuery, (error2, result2) => {
+        if (error2) {
+          console.log('behaviour query error');
+        }
+        else {
+          const data = { species: result.rows, behaviour: result2.rows };
+          res.render('note', data);
+        }
+      });
     }
   });
 });
@@ -66,9 +74,8 @@ app.post('/note', (req, res) => {
       console.log('Error: species query');
     }
     else {
-      const currentSpecies = result.rows.name;
-      const noteSqlQuery = 'INSERT INTO notes (flock_size, date, user_id,species_id, behaviour) VALUES ($1, $2, $3, $4, $5) RETURNING *';
-      const noteData = [Number(entryData.flock_size), entryData.date, Number(req.cookies.userId), entryData.species, entryData.behaviour];
+      const noteSqlQuery = 'INSERT INTO notes (flock_size, date, user_id,species_id) VALUES ($1, $2, $3, $4) RETURNING *';
+      const noteData = [Number(entryData.flock_size), entryData.date, Number(req.cookies.userId), entryData.species];
       console.log(noteData);
 
       pool.query(noteSqlQuery, noteData, (error2, result2) => {
@@ -78,10 +85,40 @@ app.post('/note', (req, res) => {
           res.status(403).send('Please log in');
         }
         else {
-          console.log('result2', result2.rows);
           const noteId = Number(result2.rows[0].id);
-          const data = { note: result2.rows[0], noteId };
-          res.render('single-note', data);
+          const noteBehaviourQuery = 'INSERT INTO notes_behaviour (notes_id, behaviour_id) VALUES ($1, $2) RETURNING *';
+
+          let queryDoneCounter = 0;
+          const allBehaviourId = req.body.behaviour;
+          const allBehaviour = [];
+          allBehaviourId.forEach((actionId) => {
+            const behaviourIdQuery = `SELECT * FROM behaviour WHERE id = '${actionId}'`;
+            pool.query(behaviourIdQuery, (behaviourIdQueryError, behaviourIdQueryResult) => {
+              if (behaviourIdQueryError) {
+                console.log('behaviour id query error');
+              }
+              else {
+                console.log('behaviourIdQueryResult.rows :>> ', behaviourIdQueryResult.rows);
+                allBehaviour.push(behaviourIdQueryResult.rows[0].action);
+                const values = [noteId, actionId];
+                pool.query(noteBehaviourQuery, values, (behaviourError, behaviourResult) => {
+                  if (behaviourError) {
+                    console.log('insert behaviour query error');
+                  }
+                  else {
+                    queryDoneCounter += 1;
+                    if (queryDoneCounter === req.body.behaviour.length) {
+                      console.log('insert behaviour query done!');
+                      console.log('result2', result2.rows);
+                      const data = { note: result2.rows[0], noteId, allBehaviour };
+                      console.log(allBehaviour);
+                      res.render('single-note', data);
+                    }
+                  }
+                });
+              }
+            });
+          });
         }
       });
     }
@@ -105,15 +142,25 @@ app.get('/note/:index', (req, res) => {
     res.status(403).send('please login!');
   }
   else {
-    const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, notes.behaviour, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
+    const noteSqlQuery = 'SELECT notes.id, notes.flock_size, notes.user_id, notes.species_id, notes.date, species.id AS species_table_id, species.name AS species_name, species.scientific_name FROM notes INNER JOIN species ON species.id = notes.species_id WHERE notes.id = $1';
     const noteId = Number(req.params.index) + 1;
     pool.query(noteSqlQuery, [noteId], (error, result) => {
       if (error) {
         console.log('Error: single note query');
       }
       else {
-        const data = { note: result.rows[0], noteId };
-        res.render('single-note', data);
+        const behaviourSqlQuery = `SELECT notes_behaviour.id, notes_behaviour.notes_id, notes_behaviour.behaviour_id, behaviour.id AS behaviour_table_id, behaviour.action FROM notes_behaviour INNER JOIN behaviour ON notes_behaviour.behaviour_id = behaviour.id WHERE notes_behaviour.notes_id = ${noteId}`;
+        pool.query(behaviourSqlQuery, (behaviourSqlQueryError, behaviourSqlQueryResult) => {
+          if (behaviourSqlQueryError) {
+            console.log('behaviourSqlQuery error');
+          }
+          else {
+            const allBehaviour = [];
+            behaviourSqlQueryResult.rows.forEach((item) => allBehaviour.push(item.action));
+            const data = { note: result.rows[0], noteId, allBehaviour };
+            res.render('single-note', data);
+          }
+        });
       }
     });
   }
@@ -150,11 +197,31 @@ app.get('/note/:index/edit', (req, res) => {
                   console.log('Error: single note query');
                 }
                 else {
-                  const data = { note: result.rows[0], noteId, allSpeciesData };
-                  console.log(data);
-                  res.render('edit', data);
-                }
-              });
+                  const behaviourSqlQuery = `SELECT notes_behaviour.id, notes_behaviour.notes_id, notes_behaviour.behaviour_id, behaviour.id AS behaviour_table_id, behaviour.action FROM notes_behaviour INNER JOIN behaviour ON notes_behaviour.behaviour_id = behaviour.id WHERE notes_behaviour.notes_id = ${noteId}`;
+                  pool.query(behaviourSqlQuery, (behaviourSqlQueryError, behaviourSqlQueryResult) => {
+                    if (behaviourSqlQueryError) {
+                      console.log('behaviourSqlQuery error');
+                    }
+                    else {
+                      const allBehaviour = [];
+                      behaviourSqlQueryResult.rows.forEach((item) => allBehaviour.push(item.action));
+
+                      const behaviourQuery = 'SELECT * FROM behaviour';
+                      pool.query(behaviourQuery, (error3, result3) => {
+                        if (error2) {
+                          console.log('behaviour query error');
+                        }
+                        else {
+                          const behaviourList = result3.rows;
+                          const data = {
+                            note: result.rows[0], noteId, allSpeciesData, allBehaviour, behaviourList,
+                          };
+                          console.log(data);
+                          res.render('edit', data);
+                        } });
+                    }
+                  });
+                } });
             }
           });
         }

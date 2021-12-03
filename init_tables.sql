@@ -24,4 +24,9 @@ CREATE TABLE IF NOT EXISTS notes (
   behaviour TEXT
 );
 
-INSERT INTO species (name, scientific_name) VALUES ('Wandering Whistling Duckling Duck', 'Dendrocygna arcuata'), ('Lesser Whistling Duck', 'Dendrocygna javanica'), ('Cotton Pygmy Goose', 'ettapus coromandelianus'), ('Gadwall', 'Anas strepera'), ('Eurasian Wigeon', 'Anas penelope'), ('Northern Shoveler','Anas clypeata'), ('Northern Pintail', 'Anas acuta'), ('Garganey', 'Anas querquedula'), ('Eurasian Teal', 'Anas crecca'), ('Tufted Duck', 'Aythya fuligula'), ('Red Junglefowl', 'Gallus gallus');        
+CREATE TABLE IF NOT EXISTS notes_behaviour (
+  id SERIAL PRIMARY KEY,
+  notes_id INTEGER REFERENCES notes(id),
+  behaviour_id INTEGER REFERENCES behaviour(id)
+);
+       

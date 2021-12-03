@@ -1,0 +1,3 @@
+INSERT INTO species (name, scientific_name) VALUES ('Wandering Whistling Duckling Duck', 'Dendrocygna arcuata'), ('Lesser Whistling Duck', 'Dendrocygna javanica'), ('Cotton Pygmy Goose', 'ettapus coromandelianus'), ('Gadwall', 'Anas strepera'), ('Eurasian Wigeon', 'Anas penelope'), ('Northern Shoveler','Anas clypeata'), ('Northern Pintail', 'Anas acuta'), ('Garganey', 'Anas querquedula'), ('Eurasian Teal', 'Anas crecca'), ('Tufted Duck', 'Aythya fuligula'), ('Red Junglefowl', 'Gallus gallus'); 
+
+INSERT INTO behaviour (action) VALUES ('Bathing'), ('Feeding'), ('Walking'), ('Resting'), ('Flocking'), ('Climbing Tree'), ('Drinking'), ('Singing'), ('Preening'), ('Hovering');

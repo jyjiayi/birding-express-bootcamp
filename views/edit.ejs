@@ -44,124 +44,77 @@
       </div>
     </div>
 
+
+
     <div class="row">
       <div class="col-sm-2 input-field">
         <p>Behaviour:</p>
         <br />
       </div>
       <div class="col-sm-10 input-field">
+        <% for (let i=0; i<6; i+=1) { %>
         <div class="form-check form-check-inline">
+          <% if (allBehaviour.includes(behaviourList[i].action)) { %>
           <input
             class="form-check-input"
             type="checkbox"
             name="behaviour"
-            value="bathing"
+            value="<%= behaviourList[i].id %>"
             id="behaviour"
+            checked
           />
-          <label class="form-check-label" for="behaviour"> Bathing </label>
-        </div>
-        <div class="form-check form-check-inline">
+          <% } else { %> 
           <input
             class="form-check-input"
             type="checkbox"
             name="behaviour"
-            value="feeding"
+            value="<%= behaviourList[i].id %>"
             id="behaviour"
           />
-          <label class="form-check-label" for="behaviour"> Feeding </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="behaviour"
-            value="walking"
-            id="behaviour"
-          />
-          <label class="form-check-label" for="behaviour"> Walking </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="behaviour"
-            value="resting"
-            id="behaviour"
-          />
-          <label class="form-check-label" for="behaviour"> Resting </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="behaviour"
-            value="flocking"
-            id="behaviour"
-          />
-          <label class="form-check-label" for="behaviour"> Flocking </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="behaviour"
-            value="climbing tree"
-            id="behaviour"
-          />
+        <% } %>
           <label class="form-check-label" for="behaviour">
-            Climbing tree
-          </label>
+            <%= behaviourList[i].action %></label
+          >
         </div>
+        <% } %>
       </div>
     </div>
+
     <div class="row">
-      <div class="col-sm-2 input-field"></div>
+      <div class="col-sm-2 input-field">
+        <p>Behaviour:</p>
+        <br />
+      </div>
       <div class="col-sm-10 input-field">
+        <% for (let i=6; i<behaviourList.length; i+=1) { %>
         <div class="form-check form-check-inline">
+          <% if (allBehaviour.includes(behaviourList[i].action)) { %>
           <input
             class="form-check-input"
             type="checkbox"
             name="behaviour"
-            value="drinking"
+            value="<%= behaviourList[i].id %>"
             id="behaviour"
+            checked
           />
-          <label class="form-check-label" for="behaviour"> Drinking </label>
-        </div>
-
-        <div class="form-check form-check-inline">
+          <% } else { %> 
           <input
             class="form-check-input"
             type="checkbox"
             name="behaviour"
-            value="singing"
+            value="<%= behaviourList[i].id %>"
             id="behaviour"
           />
-          <label class="form-check-label" for="behaviour"> Singing </label>
+        <% } %>
+          <label class="form-check-label" for="behaviour">
+            <%= behaviourList[i].action %></label
+          >
         </div>
-
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="behaviour"
-            value="preening"
-            id="behaviour"
-          />
-          <label class="form-check-label" for="behaviour"> Preening </label>
-        </div>
-
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="behaviour"
-            value="hovering"
-            id="behaviour"
-          />
-          <label class="form-check-label" for="behaviour"> Hovering </label>
-        </div>
+        <% } %>
       </div>
     </div>
+  </br>
+
     <!-- <div class="comments-input">
       <label for="comments">Comments:</label><br />
       <textarea type="text" id="comments" name="comments"></textarea><br />
