@@ -34,8 +34,6 @@ if (process.env.ENV === 'PRODUCTION') {
   };
 }
 
-
-
 const pool = new Pool(pgConnectionConfigs);
 
 const app = express();
@@ -434,4 +432,4 @@ app.delete('/logout', (request, response) => {
   response.redirect('/login');
 });
 
-app.listen(PORT));
+app.listen(PORT);
